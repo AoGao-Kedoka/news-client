@@ -1,13 +1,16 @@
 #include "loginwindow.h"
 #include "mainwindow.h"
+#include "newscontent.h"
 
 #include <QApplication>
+#include <QFile>
 #include <QNetworkAccessManager>
 
 int main(int argc, char *argv[])
 {
-    QApplication          a(argc, argv);
-    QSettings             settings("NextcloudNewsClient", "client");
+    QApplication app(argc, argv);
+    QSettings    settings("NextcloudNewsClient", "client");
+
     QNetworkAccessManager networkManager;
 
     LoginWindow loginWindow{nullptr, &settings, &networkManager};
@@ -22,5 +25,5 @@ int main(int argc, char *argv[])
     {
         mainWindow.show();
     }
-    return a.exec();
+    return app.exec();
 }

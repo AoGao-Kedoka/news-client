@@ -7,16 +7,23 @@
  * @brief The News class handles news REST API
  * https://nextcloud.github.io/news/api/api-v1-3/
  */
-class News
+class News : public QObject
 {
+    Q_OBJECT
+
   public:
     News(QSettings *settings, QNetworkAccessManager *networkManager);
     ~News();
-    QNetworkReply *FetchFeeds();
-    QNetworkReply *FetchItems();
+    void FetchFeeds();
+    void FetchItems(int batchSize = 20, int offset = 0, int type = 3, int id = 0, bool getRead = true);
+
+  private slots:
+    void on_FeedsNetworkReplyed();
+    void on_ItemsNetworkReplyed();
 
   private:
     QString buildAuthHeader(QString username, QString appPassword);
+    bool    validReply(QNetworkReply *reply);
 
   public:
     struct NewsItem
@@ -31,7 +38,8 @@ class News
 
     std::vector<NewsItem> NewsItems;
 
-    int DefaultItemCount = 20;
+  signals:
+    void ItemsFetched(const std::vector<NewsItem> &items);
 
   private:
     QString newsBaseUrl = "/index.php/apps/news/api/v1-3";

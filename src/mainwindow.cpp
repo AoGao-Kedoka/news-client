@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QNetworkReply>
 #include <QPushButton>
+#include <QScrollBar>
 
 MainWindow::MainWindow(QWidget *parent, QSettings *settings, QNetworkAccessManager *networkManager) :
     QWidget(parent), ui(std::make_unique<Ui::MainWindow>()), news(settings, networkManager)
@@ -18,61 +19,44 @@ void MainWindow::showEvent(QShowEvent *event)
 {
     // auto feedsReply = news.FetchFeeds();
     // QObject::connect(feedsReply, &QNetworkReply::finished, this, &MainWindow::on_FeedFetched);
-    auto itemsReply = news.FetchItems();
-    QObject::connect(itemsReply, &QNetworkReply::finished, this, &MainWindow::on_ItemsFetched);
+    news.FetchItems();
+    QObject::connect(&news, &News::ItemsFetched, this, &MainWindow::on_ItemsFetched);
+    QScrollBar *vScrollBar = ui->newsScrollArea->verticalScrollBar();
+    QObject::connect(vScrollBar, &QScrollBar::valueChanged, this, [this](int value) {
+        QScrollBar *vScrollBar = ui->newsScrollArea->verticalScrollBar();
+        if (value >= vScrollBar->maximum())
+        {
+            news.FetchItems(20, news.NewsItems[news.NewsItems.size() - 1].id, 3, 0, true);
+        }
+    });
 }
 
 MainWindow::~MainWindow()
 {}
 
 void MainWindow::on_FeedFetched()
+{}
+
+void MainWindow::on_ItemsFetched(const std::vector<News::NewsItem> &items)
 {
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-    if (!validReply(reply))
+    for (const auto &item : items)
     {
-        reply->deleteLater();
-        return;
-    }
-
-    QByteArray response = reply->readAll();
-    qDebug() << "Feeds fetched successfully:" << response;
-    reply->deleteLater();
-}
-
-void MainWindow::on_ItemsFetched()
-{
-    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
-    if (!validReply(reply))
-    {
-        reply->deleteLater();
-        return;
-    }
-
-    QByteArray response = reply->readAll();
-    reply->deleteLater();
-
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
-    QJsonObject   rootObj = jsonDoc.object();
-    QJsonArray    items   = rootObj["items"].toArray();
-
-    for (const QJsonValue &itemVal : items)
-    {
-        QJsonObject item = itemVal.toObject();
-
-        News::NewsItem newsItem;
-        newsItem.id     = item["id"].toInt();
-        newsItem.title  = item["title"].toString();
-        newsItem.url    = item["url"].toString();
-        newsItem.body   = item["body"].toString();
-        newsItem.unread = item["unread"].toBool();
-        newsItem.guid   = item["guid"].toString();
-
-        QString      buttonText = QString("[%1] %2\n").arg(newsItem.unread ? "🔵" : "⚪").arg(newsItem.title);
+        QString      buttonText = QString("[%1] %2\n").arg(item.unread ? "🔵" : "⚪").arg(item.title);
         QPushButton *button     = new QPushButton(buttonText);
+        button->setMinimumHeight(150);
         button->setCheckable(false);
-        button->setToolTip(newsItem.url);
+        button->setToolTip(item.url);
 
-        news.NewsItems.push_back(newsItem);
+        connect(button, &QPushButton::clicked, this, [this, item]() {
+            qDebug() << "Content: " << item.body;
+            auto newsContent = std::make_unique<NewsContent>(nullptr, &item);
+            newsContent->setWindowTitle(item.title);
+            newsContent->show();
+            newsContent->raise();
+            newsContent->activateWindow();
+            auto _ = newsContent.release();
+        });
+
         ui->newsLayout->addWidget(button);
     }
 }

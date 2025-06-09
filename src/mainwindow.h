@@ -5,6 +5,7 @@
 #include <QWidget>
 
 #include "news.h"
+#include "newscontent.h"
 
 namespace Ui
 {
@@ -24,7 +25,7 @@ class MainWindow : public QWidget
 
   private slots:
     void on_FeedFetched();
-    void on_ItemsFetched();
+    void on_ItemsFetched(const std::vector<News::NewsItem> &items);
 
   private:
     bool validReply(QNetworkReply *reply);
@@ -32,4 +33,5 @@ class MainWindow : public QWidget
   private:
     std::unique_ptr<Ui::MainWindow> ui;
     News                            news;
+    int                             offset = 0;
 };
