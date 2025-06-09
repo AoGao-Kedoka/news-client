@@ -6,16 +6,14 @@
 #include <QJsonObject>
 #include <QSettings>
 
-LoginWindow::LoginWindow(QWidget *parent, QSettings *settings) :
-    QMainWindow(parent), ui(std::make_unique<Ui::LoginWindow>()), settings(settings)
+LoginWindow::LoginWindow(QWidget *parent, QSettings *settings, QNetworkAccessManager *networkManager) :
+    QMainWindow(parent), ui(std::make_unique<Ui::LoginWindow>()), settings(settings), networkManager(networkManager)
 {
     ui->setupUi(this);
 
-    networkManager = std::make_unique<QNetworkAccessManager>();
-    pollTimer      = std::make_unique<QTimer>();
+    pollTimer = std::make_unique<QTimer>();
 
-    QObject::connect(networkManager.get(), SIGNAL(finished(QNetworkReply *)), this,
-                     SLOT(on_networkReplyFinished(QNetworkReply *)));
+    this->setWindowTitle("Login");
 
     QString lastUrl = settings->value("lastUsedUrl", "https://nextcloud.com").toString();
     ui->URLInput->setText(lastUrl);
@@ -24,9 +22,10 @@ LoginWindow::LoginWindow(QWidget *parent, QSettings *settings) :
 LoginWindow::~LoginWindow()
 {}
 
-// https://docs.nextcloud.com/server/latest/developer_manual/client_apis/LoginFlow/index.html#login-flow-v2
 void LoginWindow::on_LoginButton_clicked()
 {
+    QObject::connect(networkManager, SIGNAL(finished(QNetworkReply *)), this,
+                     SLOT(on_networkReplyFinished(QNetworkReply *)));
     QString url = ui->URLInput->text();
     SendPostRequest(url);
 }
@@ -94,6 +93,14 @@ void LoginWindow::OnAppPasswordSuccess(QString server, QString userName, QString
 void LoginWindow::JumpToMainApp()
 {
     this->close();
+
+    mainWindowHandle->show();
+}
+
+void LoginWindow::closeEvent(QCloseEvent *event)
+{
+    QObject::disconnect(networkManager, SIGNAL(finished(QNetworkReply *)), this,
+                        SLOT(on_networkReplyFinished(QNetworkReply *)));
 }
 
 bool LoginWindow::LoggedIn()
