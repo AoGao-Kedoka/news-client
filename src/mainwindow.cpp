@@ -9,7 +9,7 @@
 #include <QScrollBar>
 
 MainWindow::MainWindow(QWidget *parent, QSettings *settings, QNetworkAccessManager *networkManager) :
-    QWidget(parent), ui(std::make_unique<Ui::MainWindow>()), news(settings, networkManager)
+    QMainWindow(parent), ui(std::make_unique<Ui::MainWindow>()), news(settings, networkManager)
 {
     ui->setupUi(this);
     this->setWindowTitle("News");
@@ -29,6 +29,8 @@ void MainWindow::showEvent(QShowEvent *event)
             news.FetchItems(20, news.NewsItems[news.NewsItems.size() - 1].id, 3, 0, true);
         }
     });
+
+    QObject::connect(ui->markAllReadBtn, &QPushButton::clicked, this, &MainWindow::on_allItemsReadButton_clicked);
 }
 
 MainWindow::~MainWindow()
@@ -51,6 +53,7 @@ void MainWindow::on_ItemsFetched(std::vector<News::NewsItem> &items)
             qDebug() << "Content: " << item.body;
             item.unread = false;
             button->setText(QString("[%1] %2\n").arg("⚪").arg(item.title));
+
             news.MarkItemAsRead(item);
             auto newsContent = std::make_unique<NewsContent>(nullptr, &item);
             newsContent->setWindowTitle(item.title);
@@ -61,6 +64,17 @@ void MainWindow::on_ItemsFetched(std::vector<News::NewsItem> &items)
         });
 
         ui->newsLayout->addWidget(button);
+    }
+}
+void MainWindow::on_allItemsReadButton_clicked()
+{
+    for (auto &item : news.NewsItems)
+    {
+        if (item.unread)
+        {
+            item.unread = false;
+            news.MarkItemAsRead(item);
+        }
     }
 }
 

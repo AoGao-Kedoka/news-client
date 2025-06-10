@@ -1,8 +1,9 @@
 #pragma once
 
+#include <QMainWindow>
 #include <QNetworkAccessManager>
+#include <QPushButton>
 #include <QSettings>
-#include <QWidget>
 
 #include "news.h"
 #include "newscontent.h"
@@ -12,7 +13,7 @@ namespace Ui
 class MainWindow;
 }
 
-class MainWindow : public QWidget
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
@@ -26,6 +27,7 @@ class MainWindow : public QWidget
   private slots:
     void on_FeedFetched();
     void on_ItemsFetched(std::vector<News::NewsItem> &items);
+    void on_allItemsReadButton_clicked();
 
   private:
     bool validReply(QNetworkReply *reply);
