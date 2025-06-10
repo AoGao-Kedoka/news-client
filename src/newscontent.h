@@ -13,7 +13,7 @@ class NewsContent : public QWidget
     Q_OBJECT
 
   public:
-    explicit NewsContent(QWidget *parent = nullptr, const News::NewsItem *item = nullptr);
+    explicit NewsContent(QWidget *parent = nullptr, News::NewsItem *item = nullptr);
     ~NewsContent();
 
   private slots:
@@ -21,5 +21,5 @@ class NewsContent : public QWidget
 
   private:
     std::unique_ptr<Ui::NewsContent> ui;
-    const News::NewsItem            *newsItem;
+    News::NewsItem                  *newsItem;
 };

@@ -17,15 +17,6 @@ class News : public QObject
     void FetchFeeds();
     void FetchItems(int batchSize = 20, int offset = 0, int type = 3, int id = 0, bool getRead = true);
 
-  private slots:
-    void on_FeedsNetworkReplyed();
-    void on_ItemsNetworkReplyed();
-
-  private:
-    QString buildAuthHeader(QString username, QString appPassword);
-    bool    validReply(QNetworkReply *reply);
-
-  public:
     struct NewsItem
     {
         int     id;
@@ -36,10 +27,21 @@ class News : public QObject
         QString guid;
     };
 
+    void MarkItemAsRead(NewsItem &item);
+
+  private slots:
+    void on_FeedsNetworkReplyed();
+    void on_ItemsNetworkReplyed();
+
+  private:
+    QString buildAuthHeader(QString username, QString appPassword);
+    bool    validReply(QNetworkReply *reply);
+
+  public:
     std::vector<NewsItem> NewsItems;
 
   signals:
-    void ItemsFetched(const std::vector<NewsItem> &items);
+    void ItemsFetched(std::vector<NewsItem> &items);
 
   private:
     QString newsBaseUrl = "/index.php/apps/news/api/v1-3";

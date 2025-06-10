@@ -48,6 +48,18 @@ void News::FetchItems(int batchSize, int offset, int type, int, bool getRead)
     QObject::connect(reply, &QNetworkReply::finished, this, &News::on_ItemsNetworkReplyed);
 }
 
+void News::MarkItemAsRead(NewsItem &item)
+{
+    QUrl            url = newsBaseUrl + "/items/" + QString::number(item.id) + "/read";
+    QNetworkRequest request(url);
+    QString         authHeader = buildAuthHeader(username, appPassword);
+
+    request.setRawHeader("Authorization", authHeader.toUtf8());
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QNetworkReply *reply = networkManager->post(request, QByteArray());
+}
+
 void News::on_ItemsNetworkReplyed()
 {
     NewsItems.clear();

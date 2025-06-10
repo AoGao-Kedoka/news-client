@@ -37,9 +37,9 @@ MainWindow::~MainWindow()
 void MainWindow::on_FeedFetched()
 {}
 
-void MainWindow::on_ItemsFetched(const std::vector<News::NewsItem> &items)
+void MainWindow::on_ItemsFetched(std::vector<News::NewsItem> &items)
 {
-    for (const auto &item : items)
+    for (auto &item : items)
     {
         QString      buttonText = QString("[%1] %2\n").arg(item.unread ? "🔵" : "⚪").arg(item.title);
         QPushButton *button     = new QPushButton(buttonText);
@@ -47,8 +47,11 @@ void MainWindow::on_ItemsFetched(const std::vector<News::NewsItem> &items)
         button->setCheckable(false);
         button->setToolTip(item.url);
 
-        connect(button, &QPushButton::clicked, this, [this, item]() {
+        connect(button, &QPushButton::clicked, this, [&]() {
             qDebug() << "Content: " << item.body;
+            item.unread = false;
+            button->setText(QString("[%1] %2\n").arg("⚪").arg(item.title));
+            news.MarkItemAsRead(item);
             auto newsContent = std::make_unique<NewsContent>(nullptr, &item);
             newsContent->setWindowTitle(item.title);
             newsContent->show();

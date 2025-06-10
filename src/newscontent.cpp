@@ -3,7 +3,7 @@
 #include <QDesktopServices>
 #include <QVBoxLayout>
 
-NewsContent::NewsContent(QWidget *parent, const News::NewsItem *item) :
+NewsContent::NewsContent(QWidget *parent, News::NewsItem *item) :
     QWidget(parent), ui(std::make_unique<Ui::NewsContent>()), newsItem(item)
 {
     ui->setupUi(this);

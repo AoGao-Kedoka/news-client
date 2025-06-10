@@ -25,7 +25,7 @@ class MainWindow : public QWidget
 
   private slots:
     void on_FeedFetched();
-    void on_ItemsFetched(const std::vector<News::NewsItem> &items);
+    void on_ItemsFetched(std::vector<News::NewsItem> &items);
 
   private:
     bool validReply(QNetworkReply *reply);
