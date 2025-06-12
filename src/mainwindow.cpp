@@ -76,6 +76,11 @@ void MainWindow::on_allItemsReadButton_clicked()
             news.MarkItemAsRead(item);
         }
     }
+    auto buttons = ui->newsLayout->parentWidget()->findChildren<QPushButton *>();
+    for (auto &button : buttons)
+    {
+        button->setText(button->text().replace("🔵", "⚪"));
+    }
 }
 
 bool MainWindow::validReply(QNetworkReply *reply)
